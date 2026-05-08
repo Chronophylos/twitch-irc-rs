@@ -41,7 +41,7 @@ smallvec = "1"
 thiserror = "2"
 tokio = { version = "1", features = ["rt", "time", "sync", "macros"] }
 tokio-native-tls = { version = "0.3", optional = true }
-tokio-rustls = { version = "0.26", optional = true }
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12", "logging"], optional = true }
 tokio-stream = { version = "0.1", features = ["io-util"], optional = true }
 tokio-util = { version = "0.7", features = ["codec"], optional = true }
 tracing = "0.1"
@@ -72,8 +72,8 @@ required-features = ["transport-tcp", "transport-tcp-native-tls", "metrics-colle
 # If you add a feature here don't forget to add it to the test workflow in workflows/rust.yml!
 default = ["transport-tcp", "transport-tcp-native-tls"]
 refreshing-token-native-tls = ["reqwest/native-tls", "__refreshing-token"]
-refreshing-token-rustls-native-roots = ["reqwest/rustls", "__refreshing-token"]
-refreshing-token-rustls-webpki-roots = ["reqwest/rustls", "webpki-root-certs", "__refreshing-token"]
+refreshing-token-rustls-native-roots = ["reqwest/rustls-no-provider", "__refreshing-token"]
+refreshing-token-rustls-webpki-roots = ["reqwest/rustls-no-provider", "webpki-root-certs", "__refreshing-token"]
 __refreshing-token = ["with-serde", "chrono/clock"]
 transport-tcp = ["bytes", "tokio/net", "tokio/io-util", "tokio-util", "tokio-stream"]
 transport-tcp-native-tls = ["transport-tcp", "tokio-native-tls"]
