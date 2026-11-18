@@ -24,8 +24,7 @@ compile_error!(
 
 #[cfg(feature = "__refreshing-token")]
 use {
-    chrono::DateTime,
-    chrono::Utc,
+    jiff::Timestamp,
     reqwest::ClientBuilder,
     std::{sync::Arc, time::Duration},
     thiserror::Error,
@@ -113,9 +112,9 @@ pub struct UserAccessToken {
     /// OAuth refresh token
     pub refresh_token: String,
     /// Timestamp of when this user access token was created
-    pub created_at: DateTime<Utc>,
+    pub created_at: Timestamp,
     /// Timestamp of when this user access token expires. `None` if this token never expires.
-    pub expires_at: Option<DateTime<Utc>>,
+    pub expires_at: Option<Timestamp>,
 }
 
 // Custom implementation to display [redacted] in place of the token
@@ -170,14 +169,14 @@ pub struct GetAccessTokenResponse {
 #[cfg(feature = "__refreshing-token")]
 impl From<GetAccessTokenResponse> for UserAccessToken {
     fn from(response: GetAccessTokenResponse) -> Self {
-        let now = Utc::now();
+        let now = Timestamp::now();
         UserAccessToken {
             access_token: response.access_token,
             refresh_token: response.refresh_token,
             created_at: now,
             expires_at: response
                 .expires_in
-                .map(|d| now + chrono::Duration::from_std(Duration::from_secs(d)).unwrap()),
+                .map(|d| now.checked_add(Duration::from_secs(d)).unwrap()),
         }
     }
 }
@@ -314,13 +313,13 @@ impl<S: TokenStorage> LoginCredentials for RefreshingLoginCredentials<S> {
             .map_err(RefreshingLoginError::LoadError)?;
 
         let token_expires_after = if let Some(expires_at) = current_token.expires_at {
-            // to_std() converts the time::duration::Duration chrono uses to a std::time::Duration
-            (expires_at - current_token.created_at).to_std().unwrap()
+            Duration::try_from(expires_at.duration_since(current_token.created_at)).unwrap()
         } else {
             // 24 hours
             Duration::from_secs(24 * 60 * 60)
         };
-        let token_age = (Utc::now() - current_token.created_at).to_std().unwrap();
+        let token_age =
+            Duration::try_from(Timestamp::now().duration_since(current_token.created_at)).unwrap();
         let max_token_age = token_expires_after.mul_f64(SHOULD_REFRESH_AFTER_FACTOR);
         let is_token_expired = token_age >= max_token_age;
 
@@ -406,4 +405,27 @@ struct UsersResponse {
 #[derive(Deserialize)]
 struct UserObject {
     login: String,
+}
+
+#[cfg(all(test, feature = "__refreshing-token"))]
+mod tests {
+    use super::UserAccessToken;
+    use jiff::Timestamp;
+
+    #[test]
+    fn user_access_token_reads_chrono_format() {
+        let json = r#"{"access_token":"a","refresh_token":"r","created_at":"2020-07-12T11:37:08.245Z","expires_at":"2020-07-12T15:37:08.245+00:00"}"#;
+        let t: UserAccessToken = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            t.created_at,
+            Timestamp::from_millisecond(1_594_553_828_245).unwrap()
+        );
+        assert_eq!(
+            t.expires_at,
+            Some(Timestamp::from_millisecond(1_594_568_228_245).unwrap())
+        );
+        let out = serde_json::to_value(&t).unwrap();
+        assert_eq!(out["created_at"], "2020-07-12T11:37:08.245Z");
+        assert_eq!(out["expires_at"], "2020-07-12T15:37:08.245Z");
+    }
 }

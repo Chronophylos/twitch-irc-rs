@@ -1,7 +1,7 @@
 use crate::message::commands::IRCMessageParseExt;
 use crate::message::twitch::{Badge, Emote, RGBColor, TwitchUserBasics};
 use crate::message::{IRCMessage, ServerMessageParseError};
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 use std::convert::TryFrom;
 
 #[cfg(feature = "with-serde")]
@@ -83,7 +83,7 @@ pub struct UserNoticeMessage {
     pub message_id: String,
 
     /// Timestamp of when this message was sent.
-    pub server_timestamp: DateTime<Utc>,
+    pub server_timestamp: Timestamp,
 
     /// The message that this `UserNoticeMessage` was parsed from.
     pub source: IRCMessage,
@@ -521,7 +521,7 @@ impl From<UserNoticeMessage> for IRCMessage {
 mod tests {
     use crate::message::twitch::{Badge, Emote, RGBColor, TwitchUserBasics};
     use crate::message::{IRCMessage, SubGiftPromo, UserNoticeEvent, UserNoticeMessage};
-    use chrono::{TimeZone, Utc};
+    use jiff::Timestamp;
     use std::convert::TryFrom;
     use std::ops::Range;
 
@@ -568,7 +568,7 @@ mod tests {
                 emotes: vec![],
                 name_color: None,
                 message_id: "2a9bea11-a80a-49a0-a498-1642d457f775".to_owned(),
-                server_timestamp: Utc.timestamp_millis_opt(1_582_685_713_242).unwrap(),
+                server_timestamp: Timestamp::from_millisecond(1_582_685_713_242).unwrap(),
                 source: irc_message,
             }
         );
@@ -627,7 +627,7 @@ mod tests {
                     b: 0xFF,
                 }),
                 message_id: "e0975c76-054c-4954-8cb0-91b8867ec1ca".to_owned(),
-                server_timestamp: Utc.timestamp_millis_opt(1_581_713_640_019).unwrap(),
+                server_timestamp: Timestamp::from_millisecond(1_581_713_640_019).unwrap(),
                 source: irc_message,
             }
         );
@@ -673,7 +673,7 @@ mod tests {
                     b: 0xE2,
                 }),
                 message_id: "ca1f02fb-77ec-487d-a9b3-bc4bfef2fe8b".to_owned(),
-                server_timestamp: Utc.timestamp_millis_opt(1_590_628_650_446).unwrap(),
+                server_timestamp: Timestamp::from_millisecond(1_590_628_650_446).unwrap(),
                 source: irc_message,
             }
         );

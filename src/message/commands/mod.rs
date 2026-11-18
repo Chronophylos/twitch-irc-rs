@@ -30,7 +30,7 @@ use crate::message::{
     AsRawIRC, ClearChatMessage, GlobalUserStateMessage, IRCMessage, NoticeMessage, PrivmsgMessage,
     ReplyParent, RoomStateMessage, TwitchUserBasics, UserNoticeMessage, WhisperMessage,
 };
-use chrono::{DateTime, TimeZone, Utc};
+use jiff::Timestamp;
 use std::collections::HashSet;
 use std::convert::TryFrom;
 use std::ops::Range;
@@ -168,7 +168,7 @@ trait IRCMessageParseExt {
     fn try_get_timestamp(
         &self,
         tag_key: &'static str,
-    ) -> Result<DateTime<Utc>, ServerMessageParseError>;
+    ) -> Result<Timestamp, ServerMessageParseError>;
     fn try_get_optional_reply_parent(&self)
     -> Result<Option<ReplyParent>, ServerMessageParseError>;
 }
@@ -428,17 +428,15 @@ impl IRCMessageParseExt for IRCMessage {
     fn try_get_timestamp(
         &self,
         tag_key: &'static str,
-    ) -> Result<DateTime<Utc>, ServerMessageParseError> {
+    ) -> Result<Timestamp, ServerMessageParseError> {
         // e.g. tmi-sent-ts.
         let tag_value = self.try_get_nonempty_tag_value(tag_key)?;
         let milliseconds_since_epoch = i64::from_str(tag_value).map_err(|_| {
             MalformedTagValue(Box::new(self.to_owned()), tag_key, tag_value.to_owned())
         })?;
-        Utc.timestamp_millis_opt(milliseconds_since_epoch)
-            .single()
-            .ok_or_else(|| {
-                MalformedTagValue(Box::new(self.to_owned()), tag_key, tag_value.to_owned())
-            })
+        Timestamp::from_millisecond(milliseconds_since_epoch).map_err(|_| {
+            MalformedTagValue(Box::new(self.to_owned()), tag_key, tag_value.to_owned())
+        })
     }
 
     fn try_get_optional_reply_parent(

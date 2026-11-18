@@ -1,7 +1,7 @@
 use crate::message::commands::IRCMessageParseExt;
 use crate::message::twitch::{Badge, Emote, RGBColor, TwitchUserBasics};
 use crate::message::{IRCMessage, ReplyParent, ReplyToMessage, ServerMessageParseError};
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 use std::convert::TryFrom;
 
 #[cfg(feature = "with-serde")]
@@ -52,7 +52,7 @@ pub struct PrivmsgMessage {
     /// delete single messages. See also the `CLEARMSG` message type.
     pub message_id: String,
     /// Timestamp of when this message was sent.
-    pub server_timestamp: DateTime<Utc>,
+    pub server_timestamp: Timestamp,
 
     /// The message that this `PrivmsgMessage` was parsed from.
     pub source: IRCMessage,
@@ -113,8 +113,7 @@ impl ReplyToMessage for PrivmsgMessage {
 mod tests {
     use crate::message::twitch::{Badge, Emote, RGBColor, TwitchUserBasics};
     use crate::message::{IRCMessage, PrivmsgMessage, ReplyParent};
-    use chrono::Utc;
-    use chrono::offset::TimeZone;
+    use jiff::Timestamp;
     use std::convert::TryFrom;
     use std::ops::Range;
 
@@ -145,7 +144,7 @@ mod tests {
                     b: 0xFF
                 }),
                 emotes: vec![],
-                server_timestamp: Utc.timestamp_millis_opt(1_594_545_155_039).unwrap(),
+                server_timestamp: Timestamp::from_millisecond(1_594_545_155_039).unwrap(),
                 message_id: "e9d998c3-36f1-430f-89ec-6b887c28af36".to_owned(),
                 reply_parent: None,
 
@@ -193,7 +192,7 @@ mod tests {
                     b: 0xE6
                 }),
                 emotes: vec![],
-                server_timestamp: Utc.timestamp_millis_opt(1_594_555_275_886).unwrap(),
+                server_timestamp: Timestamp::from_millisecond(1_594_555_275_886).unwrap(),
                 message_id: "d831d848-b7c7-4559-ae3a-2cb88f4dbfed".to_owned(),
                 reply_parent: None,
                 source: irc_message
@@ -224,7 +223,7 @@ mod tests {
                 bits: None,
                 name_color: None,
                 emotes: vec![],
-                server_timestamp: Utc.timestamp_millis_opt(1_594_554_085_753).unwrap(),
+                server_timestamp: Timestamp::from_millisecond(1_594_554_085_753).unwrap(),
                 message_id: "c9b941d9-a0ab-4534-9903-971768fcdf10".to_owned(),
                 reply_parent: None,
 
@@ -256,7 +255,7 @@ mod tests {
                 bits: None,
                 name_color: None,
                 emotes: vec![],
-                server_timestamp: Utc.timestamp_millis_opt(1_673_925_983_585).unwrap(),
+                server_timestamp: Timestamp::from_millisecond(1_673_925_983_585).unwrap(),
                 message_id: "5b4f63a9-776f-4fce-bf3c-d9707f52e32d".to_owned(),
                 reply_parent: Some(ReplyParent {
                     message_id: "6b13e51b-7ecb-43b5-ba5b-2bb5288df696".to_owned(),

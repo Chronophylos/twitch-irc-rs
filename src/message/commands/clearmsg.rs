@@ -1,6 +1,6 @@
 use crate::message::commands::IRCMessageParseExt;
 use crate::message::{IRCMessage, ServerMessageParseError};
-use chrono::{DateTime, Utc};
+use jiff::Timestamp;
 use std::convert::TryFrom;
 
 #[cfg(feature = "with-serde")]
@@ -25,7 +25,7 @@ pub struct ClearMsgMessage {
     /// Whether the deleted message was an action (`/me`)
     pub is_action: bool,
     /// server timestamp for the time when the delete command was executed.
-    pub server_timestamp: DateTime<Utc>,
+    pub server_timestamp: Timestamp,
 
     /// The message that this `ClearMsgMessage` was parsed from.
     pub source: IRCMessage,
@@ -69,7 +69,7 @@ impl From<ClearMsgMessage> for IRCMessage {
 #[cfg(test)]
 mod tests {
     use crate::message::{ClearMsgMessage, IRCMessage};
-    use chrono::{TimeZone, Utc};
+    use jiff::Timestamp;
     use std::convert::TryFrom;
 
     #[test]
@@ -86,7 +86,7 @@ mod tests {
                 message_id: "3c92014f-340a-4dc3-a9c9-e5cf182f4a84".to_owned(),
                 message_text: "NIGHT CUNT".to_owned(),
                 is_action: false,
-                server_timestamp: Utc.timestamp_millis_opt(1_594_561_955_611).unwrap(),
+                server_timestamp: Timestamp::from_millisecond(1_594_561_955_611).unwrap(),
                 source: irc_message
             }
         );
@@ -106,7 +106,7 @@ mod tests {
                 message_id: "15e5164d-f8e6-4aec-baf4-2d6a330760c4".to_owned(),
                 message_text: "test".to_owned(),
                 is_action: true,
-                server_timestamp: Utc.timestamp_millis_opt(1_594_562_632_383).unwrap(),
+                server_timestamp: Timestamp::from_millisecond(1_594_562_632_383).unwrap(),
                 source: irc_message
             }
         );

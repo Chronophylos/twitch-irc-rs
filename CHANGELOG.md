@@ -4,6 +4,10 @@ Version numbers follow [Semantic Versioning](https://semver.org/).
 
 ## Unreleased
 
+- Breaking: Replaced `chrono` with `jiff` 1.0. `server_timestamp` on `ClearChatMessage`, `ClearMsgMessage`,
+  `PrivmsgMessage` and `UserNoticeMessage`, and `UserAccessToken::created_at`/`expires_at` are now `jiff::Timestamp`
+  instead of `chrono::DateTime<Utc>`. Serialized `UserAccessToken`s stored by previous versions still load unchanged.
+
 ## v6.1.3
 
 - Bugfix: Parsing no longer fails for `submysterygift` messages sent by `minecraft` during gift-match events (#234).
