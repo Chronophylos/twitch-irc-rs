@@ -324,10 +324,12 @@ impl<S: TokenStorage> LoginCredentials for RefreshingLoginCredentials<S> {
         let is_token_expired = token_age >= max_token_age;
 
         if is_token_expired {
+            // Credentials go in the form body, never the URL: a reqwest error
+            // keeps the request URL, and callers log these errors.
             let response = self
                 .http_client
                 .post("https://id.twitch.tv/oauth2/token")
-                .query(&[
+                .form(&[
                     ("grant_type", "refresh_token"),
                     ("refresh_token", &current_token.refresh_token),
                     ("client_id", &self.client_id),
@@ -335,6 +337,7 @@ impl<S: TokenStorage> LoginCredentials for RefreshingLoginCredentials<S> {
                 ])
                 .send()
                 .await
+                .and_then(reqwest::Response::error_for_status)
                 .map_err(RefreshingLoginError::RefreshError)?
                 .json::<GetAccessTokenResponse>()
                 .await
